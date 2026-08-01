@@ -118,14 +118,3 @@ http://127.0.0.1:8000/redoc
 
 ---
 
-## 👨‍💻 Author
-
-**Hredoy Hadi**
-
-Computer Science & Engineering
-
----
-
-## 📄 License
-
-This project is developed for educational and learning purposes.
