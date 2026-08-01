@@ -1,71 +1,44 @@
-from database import Base
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, Float
-from sqlalchemy.orm import relationship
-
-class Users(Base):
-    __tablename__ = 'users'
-
-    id = Column(Integer, primary_key=True, index=True)
-    email = Column(String, unique=True)
-    username = Column(String, unique=True)
-    firstname = Column(String)
-    lastname = Column(String)
-    hash_password = Column(String)
-    is_active = Column(Boolean, default=True)
-    role = Column(String)
-
-    
-    tickets = relationship("Tickets", back_populates="owner")
+import sqlite
 
 
-class Movies(Base):
-    __tablename__ = 'movies'
+conn = sqlite3.connect("ticket.db")
+cursor = conn.cursor()
 
-    id = Column(Integer, primary_key=True, index=True)
-    title = Column(String, nullable=False)
-    genre = Column(String)
-    showtime = Column(String)  # e.g., "2026-08-15 18:30"
-    price = Column(Float, default=10.0)
+# Create Movies tabl
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS movies (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    movie_name TEXT NOT NULL,
+    genre TEXT NOT NULL,
+    duration INTEGER NOT NULL,
+    show_time TEXT NOT NULL,
+    price REAL NOT NULL
+)
+""")
 
-    tickets = relationship("Tickets", back_populates="movie")
-
-
-class Tickets(Base):
-    __tablename__ = 'tickets'
-
-    id = Column(Integer, primary_key=True, index=True)
-    seat_number = Column(String, nullable=False)
-    is_confirmed = Column(Boolean, default=True)
-    
-    
-    owner_id = Column(Integer, ForeignKey("users.id"))
-    movie_id = Column(Integer, ForeignKey("movies.id"))
-
-    owner = relationship("Users", back_populates="tickets")
-    movie = relationship("Movies", back_populates="tickets")
-
-
-DROP TABLE IF EXISTS todos;
-
--- Create the new Movies catalog
-CREATE TABLE movies (
-    id INTEGER NOT NULL,
-    title VARCHAR NOT NULL,
-    genre VARCHAR,
-    showtime VARCHAR,
-    price REAL,
-    PRIMARY KEY (id)
-);
-
-CREATE TABLE tickets (
-    id INTEGER NOT NULL,
-    seat_number VARCHAR NOT NULL,
-    is_confirmed BOOLEAN DEFAULT 1,
-    owner_id INTEGER,
-    movie_id INTEGER,
-    PRIMARY KEY (id),
-    FOREIGN KEY(owner_id) REFERENCES users (id),
-    FOREIGN KEY(movie_id) REFERENCES movies (id)
-);
+# Create Tickets table
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS tickets (
+    ticket_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    customer_name TEXT NOT NULL,
+    movie_id INTEGER NOT NULL,
+    seat_number TEXT NOT NULL,
+    booking_date TEXT NOT NULL,
+    FOREIGN KEY (movie_id) REFERENCES movies(id)
+)
+""")
 
 
+cursor.executemany("""
+INSERT INTO movies (movie_name, genre, duration, show_time, price)
+VALUES (?, ?, ?, ?, ?)
+""", [
+    ("Avengers: Endgame", "Action", 181, "7:00 PM", 450),
+    ("Avatar 2", "Sci-Fi", 192, "9:00 PM", 500),
+    ("Inception", "Thriller", 148, "5:30 PM", 400),
+    ("Interstellar", "Sci-Fi", 169, "8:00 PM", 480),
+    ("The Batman", "Action", 176, "6:30 PM", 420)
+])
+
+
+print("ticket.db created successfully!")
